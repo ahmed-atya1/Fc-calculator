@@ -10,7 +10,6 @@
     capitalTotal: document.getElementById("capital-total"),
     chips: Array.from(document.querySelectorAll(".chip")),
     stepButtons: Array.from(document.querySelectorAll(".player-stepper")),
-    priceStepButtons: Array.from(document.querySelectorAll("[data-price-target]")),
     resetButton: document.getElementById("reset-btn"),
     profitCard: document.getElementById("profit-card"),
     lossCard: document.getElementById("loss-card"),
@@ -31,6 +30,8 @@
   let renderFrameId = null;
   let presenceSessionId = null;
   let presenceRequestPending = false;
+  let stepperRepeat = null;
+  const pointerDownButtons = new WeakSet();
 
   function animateNumber(element, endValue, decimals) {
     if (element._rafId) {
@@ -76,6 +77,11 @@
     render();
   }
 
+  function getHoldStep(elapsed) {
+    const power = Math.min(12, Math.floor(elapsed / 1000));
+    return Math.pow(10, power);
+  }
+
   function getMarketPriceStep(price, direction) {
     if (direction > 0) {
       if (price < 1000) {
@@ -106,6 +112,54 @@
       return 50000 + (Math.ceil((price - 50000) / 500) - 1) * 500;
     }
     return 100000 + (Math.ceil((price - 100000) / 1000) - 1) * 1000;
+  }
+
+  function adjustFromStepper(button, isInitial, startedAt) {
+    const input = document.getElementById(button.dataset.adjustTarget);
+    const direction = Number(button.dataset.adjustDirection);
+    const currentValue = fc.parseNumericInput(input.value);
+    const isPrice = input === elements.buyPrice || input === elements.sellPrice;
+    const step = isInitial ? 1 : getHoldStep(Date.now() - startedAt);
+    const minimum = input === elements.playersCount ? 1 : 0;
+    const nextValue = isPrice
+      ? getMarketPriceStep(currentValue, direction)
+      : Math.max(minimum, currentValue + direction * step);
+
+    if (input === elements.playersCount) {
+      setPlayersValue(nextValue);
+      return;
+    }
+
+    input.value = nextValue ? fc.formatNumber(String(nextValue)) : "";
+    render();
+  }
+
+  function stopStepperRepeat() {
+    if (stepperRepeat) {
+      global.clearTimeout(stepperRepeat.timeoutId);
+      stepperRepeat = null;
+    }
+  }
+
+  function startStepperRepeat(button) {
+    stopStepperRepeat();
+    const startedAt = Date.now();
+    const state = {
+      timeoutId: null,
+      interval: 120
+    };
+    stepperRepeat = state;
+    adjustFromStepper(button, true, startedAt);
+
+    state.timeoutId = global.setTimeout(function repeatStep() {
+      if (stepperRepeat !== state) {
+        return;
+      }
+
+      adjustFromStepper(button, false, startedAt);
+      state.interval = Math.max(20, state.interval * 0.8);
+      state.timeoutId = global.setTimeout(repeatStep, state.interval);
+    }, 250);
   }
 
   function setNeutralState() {
@@ -359,23 +413,37 @@
   });
 
   elements.stepButtons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      const currentValue = Number(fc.digitsOnly(elements.playersCount.value)) || 1;
-      const step = Number(button.dataset.step) || 0;
-      setPlayersValue(currentValue + step);
+    button.addEventListener("pointerdown", function (event) {
+      if (event.button !== 0) {
+        return;
+      }
+      event.preventDefault();
+      pointerDownButtons.add(button);
+      startStepperRepeat(button);
+    });
+    button.addEventListener("click", function (event) {
+      if (event.detail === 0) {
+        pointerDownButtons.delete(button);
+        adjustFromStepper(button, true, Date.now());
+      } else if (pointerDownButtons.has(button)) {
+        pointerDownButtons.delete(button);
+      } else {
+        adjustFromStepper(button, true, Date.now());
+      }
+    });
+    button.addEventListener("pointerleave", stopStepperRepeat);
+    button.addEventListener("mouseleave", stopStepperRepeat);
+    button.addEventListener("contextmenu", function (event) {
+      event.preventDefault();
+    });
+    button.addEventListener("selectstart", function (event) {
+      event.preventDefault();
     });
   });
-
-  elements.priceStepButtons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      const input = document.getElementById(button.dataset.priceTarget);
-      const currentPrice = fc.parseNumericInput(input.value);
-      const direction = Number(button.dataset.priceDirection);
-      const nextPrice = getMarketPriceStep(currentPrice, direction);
-      input.value = fc.formatNumber(String(nextPrice));
-      render();
-    });
-  });
+  document.addEventListener("pointerup", stopStepperRepeat);
+  document.addEventListener("pointercancel", stopStepperRepeat);
+  global.addEventListener("mouseup", stopStepperRepeat);
+  global.addEventListener("blur", stopStepperRepeat);
 
   elements.chips.forEach(function (chip) {
     chip.addEventListener("click", function () {

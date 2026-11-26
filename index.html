@@ -11,11 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="assets/images/fc-coins-small.png" />
     <link rel="stylesheet" href="css/base.css" />
-    <link rel="stylesheet" href="css/components.css?v=20261113-2" />
+    <link rel="stylesheet" href="css/components.css?v=20261126-2" />
     <link rel="stylesheet" href="css/responsive.css" />
     <script src="js/config.js" defer></script>
     <script src="js/calculator.js?v=20261113" defer></script>
-    <script src="js/app.js?v=20261113-3" defer></script>
+    <script src="js/app.js?v=20261126-3" defer></script>
   </head>
   <body>
     <div class="page-shell">
@@ -34,33 +34,33 @@
           <div class="field">
             <label for="buy-price">سعر الشراء (للاعب الواحد)</label>
             <div class="player-control price-control">
-              <button type="button" class="player-stepper" data-price-target="buy-price" data-price-direction="-1" aria-label="إنقاص سعر الشراء">−</button>
+              <button type="button" class="player-stepper" data-adjust-target="buy-price" data-adjust-direction="-1" aria-label="إنقاص سعر الشراء">−</button>
               <div class="input-wrap">
                 <input id="buy-price" type="text" inputmode="numeric" placeholder="0" aria-label="سعر الشراء" />
               </div>
-              <button type="button" class="player-stepper" data-price-target="buy-price" data-price-direction="1" aria-label="زيادة سعر الشراء">+</button>
+              <button type="button" class="player-stepper" data-adjust-target="buy-price" data-adjust-direction="1" aria-label="زيادة سعر الشراء">+</button>
             </div>
           </div>
 
           <div class="field">
             <label for="sell-price">سعر البيع (للاعب الواحد)</label>
             <div class="player-control price-control">
-              <button type="button" class="player-stepper" data-price-target="sell-price" data-price-direction="-1" aria-label="إنقاص سعر البيع">−</button>
+              <button type="button" class="player-stepper" data-adjust-target="sell-price" data-adjust-direction="-1" aria-label="إنقاص سعر البيع">−</button>
               <div class="input-wrap">
                 <input id="sell-price" type="text" inputmode="numeric" placeholder="0" aria-label="سعر البيع" />
               </div>
-              <button type="button" class="player-stepper" data-price-target="sell-price" data-price-direction="1" aria-label="زيادة سعر البيع">+</button>
+              <button type="button" class="player-stepper" data-adjust-target="sell-price" data-adjust-direction="1" aria-label="زيادة سعر البيع">+</button>
             </div>
           </div>
 
           <div class="field">
             <label for="players-count">عدد اللاعبين من نفس النسخة</label>
             <div class="player-control">
-              <button type="button" class="player-stepper" data-step="-1" aria-label="إنقاص">−</button>
+              <button type="button" class="player-stepper" data-adjust-target="players-count" data-adjust-direction="-1" aria-label="إنقاص">−</button>
               <div class="input-wrap player-input">
                 <input id="players-count" type="text" inputmode="numeric" value="1" aria-label="عدد اللاعبين" />
               </div>
-              <button type="button" class="player-stepper" data-step="1" aria-label="زيادة">+</button>
+              <button type="button" class="player-stepper" data-adjust-target="players-count" data-adjust-direction="1" aria-label="زيادة">+</button>
             </div>
             <div class="chip-row" aria-label="اختيارات سريعة">
               <button type="button" class="chip" data-players="5">5</button>
